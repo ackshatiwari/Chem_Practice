@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Element Drill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E9EEEC; --ink:#1D2830; --muted:#5B6970; --tile:#FBFCFA; --line:#C5D0CC; --soft:#DDE5E2;
+  --lv0:#B8475A; --lv1:#B87E12; --lv2:#23806A; --lv3:#3656A6;
+  --good:#23806A; --bad:#B8475A;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#131B20; --ink:#E4EBE8; --muted:#94A3A9; --tile:#1D272D; --line:#34444C; --soft:#25323A;
+    --lv0:#E0788A; --lv1:#E0AE4A; --lv2:#4DBB9D; --lv3:#7F9DEB; --good:#4DBB9D; --bad:#E0788A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131B20; --ink:#E4EBE8; --muted:#94A3A9; --tile:#1D272D; --line:#34444C; --soft:#25323A;
+  --lv0:#E0788A; --lv1:#E0AE4A; --lv2:#4DBB9D; --lv3:#7F9DEB; --good:#4DBB9D; --bad:#E0788A;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;min-height:100vh}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--lv3);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:28px 20px 60px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(2.2rem,7vw,3.4rem);line-height:1;letter-spacing:-.02em;margin:0 0 8px}
+h2{font-family:var(--display);font-weight:700;font-size:1.25rem;margin:34px 0 4px}
+.sub{color:var(--muted);margin:0;max-width:60ch}
+.hidden{display:none!important}
+
+/* hero strip of mini tiles */
+.strip{display:flex;gap:6px;margin:0 0 22px;flex-wrap:wrap}
+.mini{width:46px;height:46px;border:2px solid var(--ink);background:var(--tile);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.2rem}
+
+/* direction control */
+.seg{display:inline-flex;border:2px solid var(--ink);margin-top:10px;flex-wrap:wrap}
+.seg button{background:transparent;border:0;padding:9px 16px;cursor:pointer;border-right:2px solid var(--ink)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+/* set rows */
+.sets{display:grid;gap:10px;margin-top:12px}
+.set{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;width:100%;text-align:left;background:var(--tile);border:2px solid var(--line);padding:14px 16px;cursor:pointer}
+.set:hover{border-color:var(--ink)}
+.set .range{font-family:var(--display);font-weight:800;font-size:1.35rem;min-width:88px}
+.set .meta{font-size:.9rem;color:var(--muted)}
+.bar{display:flex;height:8px;background:var(--soft);margin-top:6px;overflow:hidden}
+.bar span{display:block;height:100%}
+.go{font-weight:700;font-size:.95rem}
+.reset-all{margin-top:30px;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0}
+
+/* quiz */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.linkbtn{background:none;border:0;padding:6px 0;cursor:pointer;color:var(--muted);text-decoration:underline}
+.settitle{font-family:var(--display);font-weight:700}
+.levels{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0 26px}
+.lv{border-top:5px solid;padding:8px 2px 0}
+.lv b{font-family:var(--display);font-size:1.5rem;display:block;line-height:1.1}
+.lv small{color:var(--muted);font-size:.82rem}
+.lv0{border-color:var(--lv0)} .lv1{border-color:var(--lv1)} .lv2{border-color:var(--lv2)} .lv3{border-color:var(--lv3)}
+
+.stage{display:grid;justify-items:center;text-align:center}
+.tile{width:min(250px,70vw);aspect-ratio:1;background:var(--tile);border:3px solid var(--ink);position:relative;display:grid;place-items:center;padding:18px}
+.tile .big{font-family:var(--display);font-weight:800;font-size:clamp(4rem,19vw,6.5rem);line-height:1;letter-spacing:-.02em}
+.tile .word{font-family:var(--display);font-weight:700;font-size:clamp(1.5rem,6.5vw,2.1rem);line-height:1.1;word-break:break-word}
+.tile .blank{position:absolute;left:18px;right:18px;bottom:22px;border-bottom:3px dashed var(--muted);height:0}
+.badge{position:absolute;top:10px;left:12px;font-size:.78rem;font-weight:700;padding:1px 8px;color:#fff}
+.tile.flash-good{border-color:var(--good)} .tile.flash-bad{border-color:var(--bad)}
+.ask{margin:18px 0 10px;color:var(--muted)}
+.answer{display:flex;gap:8px;width:min(420px,100%)}
+.answer input{flex:1;min-width:0;font:inherit;font-size:1.25rem;padding:12px 14px;border:2px solid var(--ink);background:var(--tile);color:var(--ink)}
+.btn{background:var(--ink);color:var(--bg);border:2px solid var(--ink);padding:12px 18px;font-weight:700;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink)}
+.feedback{min-height:120px;margin-top:16px;width:min(420px,100%)}
+.fb{border-left:5px solid;padding:10px 14px;text-align:left;background:var(--tile)}
+.fb.good{border-color:var(--good)} .fb.bad{border-color:var(--bad)}
+.fb strong{display:block;font-family:var(--display);font-size:1.1rem}
+.fb .row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.move{font-size:.9rem;color:var(--muted)}
+
+.done{text-align:center;padding-top:30px}
+.done .tile{margin:0 auto 20px}
+.done .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+
+@media (prefers-reduced-motion:no-preference){
+  .tile.pop{animation:pop .22s ease-out}
+  @keyframes pop{from{transform:scale(.96)}to{transform:scale(1)}}
+}
+@media (max-width:520px){
+  .set{grid-template-columns:1fr auto}
+  .set .range{grid-column:1/-1;min-width:0}
+  .lv small{font-size:.72rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HOME -->
+  <section id="home">
+    <div class="strip" aria-hidden="true">
+      <div class="mini">H</div><div class="mini">He</div><div class="mini">Li</div><div class="mini">Be</div><div class="mini">?</div>
+    </div>
+    <h1>Element drill</h1>
+    <p class="sub">Name to symbol, symbol to name. Get one right and it moves up a level; miss it and it drops a level and comes back soon. A set is done when every element reaches Mastered.</p>
+
+    <h2>Direction</h2>
+    <div class="seg" role="group" aria-label="Question direction">
+      <button data-dir="n2s" aria-pressed="true">Name → symbol</button>
+      <button data-dir="s2n" aria-pressed="false">Symbol → name</button>
+      <button data-dir="mix" aria-pressed="false">Mixed</button>
+    </div>
+
+    <h2>Tests</h2>
+    <p class="sub">Cumulative, matching your five tests.</p>
+    <div class="sets" id="tests"></div>
+
+    <h2>Practice sections</h2>
+    <p class="sub">Eighteen elements at a time.</p>
+    <div class="sets" id="sections"></div>
+
+    <button class="reset-all" id="resetAll">Reset all progress</button>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz" class="hidden">
+    <div class="top">
+      <button class="linkbtn" id="exit">Back to sets</button>
+      <span class="settitle" id="qTitle"></span>
+    </div>
+    <div class="levels" id="levels"></div>
+
+    <div class="stage">
+      <div class="tile" id="tile"></div>
+      <p class="ask" id="ask"></p>
+      <form class="answer" id="form" autocomplete="off" onsubmit="return false">
+        <input id="input" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Your answer">
+        <button class="btn" id="submit" type="button">Check</button>
+      </form>
+      <div class="feedback" id="feedback" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- DONE -->
+  <section id="done" class="hidden">
+    <div class="done">
+      <div class="tile"><span class="big">Au</span></div>
+      <h1 id="doneTitle">Set mastered</h1>
+      <p class="sub" style="margin:0 auto" id="doneText"></p>
+      <div class="row">
+        <button class="btn" id="again">Reset and study again</button>
+        <button class="btn ghost" id="home2">Back to sets</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const RAW = "H Hydrogen|He Helium|Li Lithium|Be Beryllium|B Boron|C Carbon|N Nitrogen|O Oxygen|F Fluorine|Ne Neon|Na Sodium|Mg Magnesium|Al Aluminum|Si Silicon|P Phosphorus|S Sulfur|Cl Chlorine|Ar Argon|K Potassium|Ca Calcium|Sc Scandium|Ti Titanium|V Vanadium|Cr Chromium|Mn Manganese|Fe Iron|Co Cobalt|Ni Nickel|Cu Copper|Zn Zinc|Ga Gallium|Ge Germanium|As Arsenic|Se Selenium|Br Bromine|Kr Krypton|Rb Rubidium|Sr Strontium|Y Yttrium|Zr Zirconium|Nb Niobium|Mo Molybdenum|Tc Technetium|Ru Ruthenium|Rh Rhodium|Pd Palladium|Ag Silver|Cd Cadmium|In Indium|Sn Tin|Sb Antimony|Te Tellurium|I Iodine|Xe Xenon|Cs Cesium|Ba Barium|La Lanthanum|Ce Cerium|Pr Praseodymium|Nd Neodymium|Pm Promethium|Sm Samarium|Eu Europium|Gd Gadolinium|Tb Terbium|Dy Dysprosium|Ho Holmium|Er Erbium|Tm Thulium|Yb Ytterbium|Lu Lutetium|Hf Hafnium|Ta Tantalum|W Tungsten|Re Rhenium|Os Osmium|Ir Iridium|Pt Platinum|Au Gold|Hg Mercury|Tl Thallium|Pb Lead|Bi Bismuth|Po Polonium|At Astatine|Rn Radon|Fr Francium|Ra Radium|Ac Actinium|Th Thorium";
+const EL = RAW.split("|").map((s,i)=>{const [sym,name]=s.split(" ");return {i,sym,name};});
+const ALT = {Aluminum:["aluminium"],Sulfur:["sulphur"],Cesium:["caesium"]};
+
+const LEVELS = ["Not learned","Familiar","Proficient","Mastered"];
+const TESTS = [18,36,54,72,90].map(n=>({id:"t"+n,label:"1–"+n,from:0,to:n,title:"Test: elements 1–"+n}));
+const SECTIONS = [0,18,36,54,72].map(a=>({id:"s"+a,label:(a+1)+"–"+(a+18),from:a,to:a+18,title:"Section: elements "+(a+1)+"–"+(a+18)}));
+
+const STORE_KEY = "element-drill-v1";
+let dir = "n2s";
+let progress = load();   // {n2s:[levels...], s2n:[...], mix:[...]}
+let S = null;            // session
+
+function blank(){return {n2s:Array(90).fill(0),s2n:Array(90).fill(0),mix:Array(90).fill(0)};}
+function load(){
+  try{const p=JSON.parse(localStorage.getItem(STORE_KEY)); if(p&&p.n2s&&p.s2n&&p.mix) return p;}catch(e){}
+  return blank();
+}
+function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(progress));}catch(e){}}
+try{const d=localStorage.getItem(STORE_KEY+"-dir"); if(["n2s","s2n","mix"].includes(d)) dir=d;}catch(e){}
+
+const $ = id=>document.getElementById(id);
+function show(id){["home","quiz","done"].forEach(x=>$(x).classList.toggle("hidden",x!==id)); window.scrollTo(0,0);}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function counts(set,d){const c=[0,0,0,0];for(let i=set.from;i<set.to;i++)c[progress[d][i]]++;return c;}
+const DIRNAME={n2s:"name → symbol",s2n:"symbol → name",mix:"mixed"};
+
+/* ---------- HOME ---------- */
+function renderHome(){
+  document.querySelectorAll(".seg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.dir===dir));
+  $("tests").innerHTML = TESTS.map(rowHTML).join("");
+  $("sections").innerHTML = SECTIONS.map(rowHTML).join("");
+  document.querySelectorAll(".set").forEach(b=>b.onclick=()=>start([...TESTS,...SECTIONS].find(s=>s.id===b.dataset.id)));
+}
+function rowHTML(s){
+  const c=counts(s,dir), n=s.to-s.from;
+  const segs=c.map((v,k)=>v?`<span style="width:${v/n*100}%;background:var(--lv${k})"></span>`:"").join("");
+  const status = c[3]===n ? "All mastered" : c[0]===n ? "Not started" : `${c[3]} of ${n} mastered`;
+  return `<button class="set" data-id="${s.id}">
+    <span class="range">${s.label}</span>
+    <span><span class="meta">${n} elements, ${status}</span><span class="bar">${segs}</span></span>
+    <span class="go">${c[0]===n?"Start":c[3]===n?"Review":"Continue"}</span></button>`;
+}
+document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{dir=b.dataset.dir;try{localStorage.setItem(STORE_KEY+"-dir",dir)}catch(e){};renderHome();});
+$("resetAll").onclick=()=>{if(confirm("Reset progress for every set and direction?")){progress=blank();save();renderHome();}};
+
+/* ---------- SESSION ---------- */
+function start(set){
+  const lv=progress[dir];
+  let ids=[];for(let i=set.from;i<set.to;i++)if(lv[i]<3)ids.push(i);
+  if(!ids.length){ finish(set,true); return; }
+  // lowest levels first, shuffled within each level
+  const groups=[0,1,2].map(L=>shuffle(ids.filter(i=>lv[i]===L)));
+  S={set,dir,queue:[].concat(...groups),cur:null,q:null,state:"ask",last:null};
+  $("qTitle").textContent=set.title+" ("+DIRNAME[dir]+")";
+  show("quiz"); next();
+}
+function insertAt(id,pos){S.queue.splice(Math.min(pos,S.queue.length),0,id);}
+function next(){
+  renderLevels();
+  if(!S.queue.length){finish(S.set,false);return;}
+  S.cur=S.queue.shift();
+  S.q = S.dir==="mix" ? (Math.random()<.5?"n2s":"s2n") : S.dir;
+  S.state="ask";
+  const e=EL[S.cur], L=progress[S.dir][S.cur];
+  const tile=$("tile");
+  tile.className="tile pop";
+  const badge=`<span class="badge" style="background:var(--lv${L})">${LEVELS[L]}</span>`;
+  tile.innerHTML = S.q==="n2s"
+    ? `${badge}<span class="word">${e.name}</span><span class="blank"></span>`
+    : `${badge}<span class="big">${e.sym}</span><span class="blank"></span>`;
+  $("ask").textContent = S.q==="n2s" ? "Type the symbol. Capitalization counts." : "Type the element name.";
+  $("input").value=""; $("input").disabled=false;
+  $("submit").textContent="Check"; $("submit").disabled=false;
+  $("feedback").innerHTML="";
+  $("input").focus();
+}
+function norm(s){return s.toLowerCase().replace(/[^a-z]/g,"");}
+function check(){
+  const raw=$("input").value.trim();
+  if(!raw){$("input").focus();return;}
+  const e=EL[S.cur], lv=progress[S.dir], prev=lv[S.cur];
+  let ok, note="";
+  if(S.q==="n2s"){
+    const typed=raw.replace(/\s/g,"");
+    ok = typed===e.sym;
+    if(!ok && typed.toLowerCase()===e.sym.toLowerCase()) note=`Letters right, capitalization wrong. It's written ${e.sym}.`;
+  }else{
+    const t=norm(raw);
+    ok = t===norm(e.name) || (ALT[e.name]||[]).includes(t);
+  }
+  S.last={id:S.cur,prev};
+  if(ok){
+    lv[S.cur]=Math.min(3,prev+1);
+    if(lv[S.cur]<3) insertAt(S.cur,5+Math.floor(Math.random()*4));
+  }else{
+    lv[S.cur]=Math.max(0,prev-1);
+    insertAt(S.cur,2);
+  }
+  save(); renderLevels();
+  S.state="feedback";
+  $("input").disabled=true;
+  $("tile").className="tile "+(ok?"flash-good":"flash-bad");
+  const answer = S.q==="n2s" ? `${e.name} is <b>${e.sym}</b>` : `${e.sym} is <b>${e.name}</b>`;
+  const moved = lv[S.cur]===prev ? `Stays at ${LEVELS[prev]}` : `${LEVELS[prev]} to ${LEVELS[lv[S.cur]]}`;
+  $("feedback").innerHTML = ok
+    ? `<div class="fb good"><strong>Correct</strong><span class="move">${moved}</span></div>`
+    : `<div class="fb bad"><strong>Not quite</strong>${note?note+"<br>":""}You typed “${escapeHTML(raw)}”. ${answer}.<br><span class="move">${moved}. It'll come back in a moment.</span>
+        <div class="row"><button class="btn ghost" id="override" type="button">I was right</button></div></div>`;
+  if(!ok) $("override").onclick=override;
+  $("submit").textContent="Continue";
+  $("submit").focus();
+}
+function override(){
+  const {id,prev}=S.last;
+  const i=S.queue.indexOf(id); if(i>-1)S.queue.splice(i,1);
+  progress[S.dir][id]=Math.min(3,prev+1);
+  if(progress[S.dir][id]<3) insertAt(id,5+Math.floor(Math.random()*4));
+  save(); next();
+}
+function escapeHTML(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function renderLevels(){
+  const c=counts(S.set,S.dir);
+  $("levels").innerHTML=c.map((v,k)=>`<div class="lv lv${k}"><b>${v}</b><small>${LEVELS[k]}</small></div>`).join("");
+}
+function finish(set,already){
+  S={set,dir};
+  $("doneTitle").textContent = already ? "Already mastered" : "Set mastered";
+  $("doneText").textContent = `Every element in ${set.label} is at Mastered for ${DIRNAME[dir]}. Reset the set to drill it again from the start, or try another direction.`;
+  show("done");
+}
+
+$("submit").onclick=()=>S.state==="ask"?check():next();
+$("input").addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();$("submit").click();}});
+document.addEventListener("keydown",ev=>{
+  if(ev.key==="Enter" && S && S.state==="feedback" && document.activeElement!==$("submit") && document.activeElement?.id!=="override"){ev.preventDefault();next();}
+});
+$("exit").onclick=()=>{S=null;renderHome();show("home");};
+$("home2").onclick=()=>{S=null;renderHome();show("home");};
+$("again").onclick=()=>{
+  const {set,dir:d}=S; for(let i=set.from;i<set.to;i++)progress[d][i]=0; save(); dir=d; start(set);
+};
+
+renderHome();
+</script>
+</body>
+</html>
